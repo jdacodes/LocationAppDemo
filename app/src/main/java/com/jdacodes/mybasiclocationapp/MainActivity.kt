@@ -14,18 +14,26 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.jdacodes.mybasiclocationapp.ui.theme.MyBasicLocationAppTheme
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+//        val viewModel by viewModels<LocationViewModel> { LocationManager(this) }
+        val locationManager = LocationManager(this)
+        val viewModelFactory = LocationViewModelFactory(locationManager)
+        val viewModel = ViewModelProvider(this, viewModelFactory).get(LocationViewModel::class.java)
+
         val locationPermissionRequest = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) { permissions ->
@@ -94,7 +102,10 @@ class MainActivity : ComponentActivity() {
                             )
                     }
 //                    Greeting("Android")
-                    LocationPermissionScreen()
+                    val currentLocation = viewModel.currentLocation
+                    LocationPermissionScreen(
+                        onShareLocation = viewModel::shareCurrentLocation,
+                        currentLocation = currentLocation)
                 }
             }
         }

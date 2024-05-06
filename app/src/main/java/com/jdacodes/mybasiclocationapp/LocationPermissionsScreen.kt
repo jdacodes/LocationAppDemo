@@ -2,6 +2,7 @@ package com.jdacodes.mybasiclocationapp
 
 import android.Manifest
 import android.content.Intent
+import android.location.Location
 import android.os.Build
 import android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS
 import android.widget.Toast
@@ -15,9 +16,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,12 +35,16 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
+import kotlinx.coroutines.flow.StateFlow
 
 
 @RequiresApi(Build.VERSION_CODES.Q)
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun LocationPermissionScreen() {
+fun LocationPermissionScreen(
+    onShareLocation: () -> Unit,
+    currentLocation: StateFlow<Location?>
+) {
     val context = LocalContext.current
 
     // Approximate location access is sufficient for most of use cases
@@ -144,6 +152,14 @@ fun LocationPermissionScreen() {
                         ).show()
                     }
                 }
+            }
+            Button(onClick = onShareLocation) {
+                Text(text = "Share Location")
+            }
+
+            val location = currentLocation.collectAsState().value
+            if (location != null) {
+                Text(text = "Current Location: ${location.latitude}, ${location.longitude}")
             }
         }
         FloatingActionButton(
