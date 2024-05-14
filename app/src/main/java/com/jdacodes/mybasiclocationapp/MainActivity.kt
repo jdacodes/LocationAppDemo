@@ -26,11 +26,13 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 
 class MainActivity : ComponentActivity() {
+    private lateinit var locationManager: LocationManager
+
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 //        val viewModel by viewModels<LocationViewModel> { LocationManager(this) }
-        val locationManager = LocationManager(this)
+        locationManager = LocationManager(this)
         val viewModelFactory = LocationViewModelFactory(locationManager)
         val viewModel = ViewModelProvider(this, viewModelFactory).get(LocationViewModel::class.java)
 
@@ -40,12 +42,11 @@ class MainActivity : ComponentActivity() {
             when {
                 permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
                     // Precise location access granted.
-                    LocationManager(this).startLocationUpdates()
+
                 }
 
                 permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
                     // Only approximate location access granted.
-                    LocationManager(this).startLocationUpdates()
                 }
 
                 else -> {
@@ -102,10 +103,13 @@ class MainActivity : ComponentActivity() {
                             )
                     }
 //                    Greeting("Android")
-                    val currentLocation = viewModel.currentLocation
+                    val currentLocation = viewModel.lastKnownLocation
+                    val locationData = viewModel.locationData
                     LocationPermissionScreen(
-                        onShareLocation = viewModel::shareCurrentLocation,
-                        currentLocation = currentLocation)
+                        onShareLocation = viewModel::shareLastKnownLocation,
+                        onLocationUpdate = viewModel::getLocationData,
+                        currentLocation = currentLocation,
+                        locationData = locationData)
                 }
             }
         }
@@ -175,6 +179,16 @@ class MainActivity : ComponentActivity() {
             )
         }
 
+    }
+
+    override fun onResume() {
+        super.onResume()
+        locationManager.startLocationUpdates()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        locationManager.stopLocationUpdates()
     }
 }
 

@@ -43,7 +43,9 @@ import kotlinx.coroutines.flow.StateFlow
 @Composable
 fun LocationPermissionScreen(
     onShareLocation: () -> Unit,
-    currentLocation: StateFlow<Location?>
+    onLocationUpdate:() -> Unit,
+    currentLocation: StateFlow<Location?>,
+    locationData: StateFlow<LocationData?>
 ) {
     val context = LocalContext.current
 
@@ -160,6 +162,15 @@ fun LocationPermissionScreen(
             val location = currentLocation.collectAsState().value
             if (location != null) {
                 Text(text = "Current Location: ${location.latitude}, ${location.longitude}")
+            }
+
+            Button(onClick = onLocationUpdate) {
+                Text(text = "Share Location")
+            }
+
+            val locationUpdate = locationData.collectAsState().value
+            if (locationUpdate != null) {
+                Text(text = "Location Data: $locationUpdate")
             }
         }
         FloatingActionButton(
