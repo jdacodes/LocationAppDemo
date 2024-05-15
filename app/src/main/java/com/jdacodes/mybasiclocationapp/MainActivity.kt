@@ -63,6 +63,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    //Requesting permissions at runtime on Activity creation for convenience purposes
 
                     // Before you perform the actual permission request, check whether your app
                     // already has the permissions, and whether your app needs to show a permission
@@ -105,11 +106,15 @@ class MainActivity : ComponentActivity() {
 //                    Greeting("Android")
                     val currentLocation = viewModel.lastKnownLocation
                     val locationData = viewModel.locationData
-                    LocationPermissionScreen(
-                        onShareLocation = viewModel::shareLastKnownLocation,
-                        onLocationUpdate = viewModel::getLocationData,
-                        currentLocation = currentLocation,
-                        locationData = locationData)
+//                    LocationPermissionScreen(
+//                        onShareLocation = viewModel::shareLastKnownLocation,
+//                        onLocationUpdate = viewModel::getLocationData,
+//                        currentLocation = currentLocation,
+//                        locationData = locationData)
+
+//                    CurrentLocationScreen()
+
+                    LocationUpdatesScreen()
                 }
             }
         }
