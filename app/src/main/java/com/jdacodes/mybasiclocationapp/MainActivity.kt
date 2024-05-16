@@ -114,7 +114,9 @@ class MainActivity : ComponentActivity() {
 
 //                    CurrentLocationScreen()
 
-                    LocationUpdatesScreen()
+//                    LocationUpdatesScreen()
+
+                    BgLocationAccessScreen()
                 }
             }
         }

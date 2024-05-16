@@ -62,6 +62,8 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(libs.google.accompanist.permissions)
     implementation(libs.jetbrains.kotlinx.coroutines.playservices)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.runtime.livedata)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
