@@ -17,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
@@ -60,7 +62,8 @@ private fun BackgroundLocationControls() {
         val enqueued = workerState?.find { !it.state.isFinished } != null
         if (enqueued) {
             ControlsState(
-                text = "Check the logcat for location updates every 15 min",
+//                text = "Check the logcat for location updates every 15 min",
+                text = "Check the logcat for location updates every 5 seconds",
                 action = "Disable updates",
                 onClick = {
                     workManager.cancelUniqueWork(BgLocationWorker.workName)
@@ -71,14 +74,20 @@ private fun BackgroundLocationControls() {
                 text = "Enable location updates and bring the app in the background.",
                 action = "Enable updates",
                 onClick = {
-                    // Schedule a periodic worker to check for location every 15 min
-                    workManager.enqueueUniquePeriodicWork(
+                    // Schedule a one-time worker and reschedule it periodically
+                    val request = OneTimeWorkRequestBuilder<BgLocationWorker>()
+                        .setInitialDelay(5, TimeUnit.SECONDS)
+                        .build()
+//                    workManager.enqueueUniquePeriodicWork(
+                    workManager.enqueueUniqueWork(
                         BgLocationWorker.workName,
-                        ExistingPeriodicWorkPolicy.KEEP,
-                        PeriodicWorkRequestBuilder<BgLocationWorker>(
-                            5,
-                            TimeUnit.SECONDS,
-                        ).build(),
+//                        ExistingPeriodicWorkPolicy.KEEP,
+//                        PeriodicWorkRequestBuilder<BgLocationWorker>(
+//                            5,
+//                            TimeUnit.SECONDS,
+//                        ).build(),
+                        ExistingWorkPolicy.REPLACE,
+                        request
                     )
                 },
             )

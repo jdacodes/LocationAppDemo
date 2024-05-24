@@ -8,8 +8,12 @@ import com.google.android.gms.location.LocationServices
 import android.Manifest
 import android.content.pm.PackageManager
 import android.util.Log
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
+import java.util.concurrent.TimeUnit
 
 class BgLocationWorker(context: Context, params: WorkerParameters) :
     CoroutineWorker(context, params) {
@@ -38,6 +42,18 @@ class BgLocationWorker(context: Context, params: WorkerParameters) :
                 )
             }
         }
+
+        // Schedule next work
+        val nextRequest = OneTimeWorkRequestBuilder<BgLocationWorker>()
+            .setInitialDelay(5, TimeUnit.SECONDS)
+            .build()
+//        WorkManager.getInstance(applicationContext).enqueue(nextRequest)
+        WorkManager.getInstance(applicationContext).enqueueUniqueWork(
+            workName,
+            ExistingWorkPolicy.REPLACE,
+            nextRequest
+        )
+
         return Result.success()
     }
 }
