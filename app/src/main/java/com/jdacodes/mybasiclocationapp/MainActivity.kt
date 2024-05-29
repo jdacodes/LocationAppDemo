@@ -112,11 +112,11 @@ class MainActivity : ComponentActivity() {
 //                        currentLocation = currentLocation,
 //                        locationData = locationData)
 
-//                    CurrentLocationScreen()
+                    CurrentLocationScreen()
 
 //                    LocationUpdatesScreen()
 
-                    BgLocationAccessScreen()
+//                    BgLocationAccessScreen()
                 }
             }
         }

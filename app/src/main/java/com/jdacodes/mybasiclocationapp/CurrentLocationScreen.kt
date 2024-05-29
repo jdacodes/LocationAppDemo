@@ -3,6 +3,10 @@ package com.jdacodes.mybasiclocationapp
 import androidx.compose.runtime.Composable
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
@@ -12,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -58,6 +63,12 @@ fun CurrentLocationContent(usePreciseLocation: Boolean) {
     var locationInfo by remember {
         mutableStateOf("")
     }
+    var latitude by remember {
+        mutableDoubleStateOf(0.0)
+    }
+    var longitude by remember {
+        mutableDoubleStateOf(0.0)
+    }
 
     Column(
         Modifier
@@ -82,6 +93,14 @@ fun CurrentLocationContent(usePreciseLocation: Boolean) {
                         "Current location is \n" + "lat : ${result.latitude}\n" +
                                 "long : ${result.longitude}\n" + "fetched at ${System.currentTimeMillis()}"
                     }
+
+                    result?.let { fetchedLocation ->
+                        latitude = fetchedLocation.latitude
+                        longitude = fetchedLocation.longitude
+
+
+
+                    }
                 }
             },
         ) {
@@ -105,6 +124,8 @@ fun CurrentLocationContent(usePreciseLocation: Boolean) {
                         locationInfo =
                             "Current location is \n" + "lat : ${fetchedLocation.latitude}\n" +
                                     "long : ${fetchedLocation.longitude}\n" + "fetched at ${System.currentTimeMillis()}"
+                        latitude = fetchedLocation.latitude
+                        longitude = fetchedLocation.longitude
                     }
                 }
             },
@@ -114,5 +135,28 @@ fun CurrentLocationContent(usePreciseLocation: Boolean) {
         Text(
             text = locationInfo,
         )
+        Button(
+            onClick = {
+                launchGoogleMaps(context, latitude, longitude)
+            },
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(text = "Open Google Maps")
+        }
     }
+}
+
+fun launchGoogleMaps(context: Context, latitude: Double, longitude: Double) {
+    // Create a Uri from an intent string. Open map using intent to pin a specific location (latitude, longitude)
+    val uri = Uri.parse("geo:$latitude,$longitude")
+    Log.d("launchGoogleMaps", "URI: $uri")
+    val intent = Intent(Intent.ACTION_VIEW, uri)
+    intent.setPackage("com.google.android.apps.maps")
+//    intent.setPackage(null)
+    if (intent.resolveActivity(context.packageManager) != null) {
+        context.startActivity(intent)
+    }else {
+        Log.d("launchGoogleMaps", "No available app to handle the intent")
+    }
+
 }
