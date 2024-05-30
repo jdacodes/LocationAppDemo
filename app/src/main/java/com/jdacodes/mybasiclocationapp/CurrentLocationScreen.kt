@@ -34,7 +34,7 @@ import kotlinx.coroutines.tasks.await
 
 @SuppressLint("MissingPermission")
 @Composable
-fun CurrentLocationScreen() {
+fun CurrentLocationScreen(viewModel: LocationViewModel) {
     val permissions = listOf(
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.ACCESS_FINE_LOCATION,
@@ -45,6 +45,7 @@ fun CurrentLocationScreen() {
         onGranted = {
             CurrentLocationContent(
                 usePreciseLocation = it.contains(Manifest.permission.ACCESS_FINE_LOCATION),
+                viewModel
             )
         },
     )
@@ -54,7 +55,7 @@ fun CurrentLocationScreen() {
     anyOf = [Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION],
 )
 @Composable
-fun CurrentLocationContent(usePreciseLocation: Boolean) {
+fun CurrentLocationContent(usePreciseLocation: Boolean, viewModel: LocationViewModel) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val locationClient = remember {
@@ -99,7 +100,6 @@ fun CurrentLocationContent(usePreciseLocation: Boolean) {
                         longitude = fetchedLocation.longitude
 
 
-
                     }
                 }
             },
@@ -137,7 +137,8 @@ fun CurrentLocationContent(usePreciseLocation: Boolean) {
         )
         Button(
             onClick = {
-                launchGoogleMaps(context, latitude, longitude)
+                val (uri, packageName) = viewModel.getGoogleMapsIntentData(latitude, longitude)
+                launchGoogleMaps(context, uri, packageName)
             },
             modifier = Modifier.padding(16.dp)
         ) {
@@ -146,16 +147,14 @@ fun CurrentLocationContent(usePreciseLocation: Boolean) {
     }
 }
 
-fun launchGoogleMaps(context: Context, latitude: Double, longitude: Double) {
+fun launchGoogleMaps(context: Context, uri: Uri, packageName: String?) {
     // Create a Uri from an intent string. Open map using intent to pin a specific location (latitude, longitude)
-    val uri = Uri.parse("geo:$latitude,$longitude")
-    Log.d("launchGoogleMaps", "URI: $uri")
+
     val intent = Intent(Intent.ACTION_VIEW, uri)
-    intent.setPackage("com.google.android.apps.maps")
-//    intent.setPackage(null)
+    intent.setPackage(packageName)
     if (intent.resolveActivity(context.packageManager) != null) {
         context.startActivity(intent)
-    }else {
+    } else {
         Log.d("launchGoogleMaps", "No available app to handle the intent")
     }
 

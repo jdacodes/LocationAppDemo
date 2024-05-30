@@ -1,6 +1,7 @@
 package com.jdacodes.mybasiclocationapp
 
 import android.location.Location
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -25,6 +26,12 @@ class LocationViewModel(private val locationManager: LocationManager) : ViewMode
         locationData.value?.let {
            Log.d("LocationViewModel", "Location data: $it")
         }
+    }
+
+    fun getGoogleMapsIntentData(latitude: Double, longitude: Double): Pair<Uri, String?> {
+        val uri = Uri.parse("geo:$latitude,$longitude")
+        val packageName = "com.google.android.apps.maps"
+        return Pair(uri, packageName)
     }
 
     fun shareLastKnownLocation() {

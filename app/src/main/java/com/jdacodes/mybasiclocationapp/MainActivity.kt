@@ -112,7 +112,7 @@ class MainActivity : ComponentActivity() {
 //                        currentLocation = currentLocation,
 //                        locationData = locationData)
 
-                    CurrentLocationScreen()
+                    CurrentLocationScreen(viewModel)
 
 //                    LocationUpdatesScreen()
 
