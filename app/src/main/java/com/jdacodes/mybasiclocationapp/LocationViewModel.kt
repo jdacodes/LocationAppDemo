@@ -3,6 +3,9 @@ package com.jdacodes.mybasiclocationapp
 import android.location.Location
 import android.net.Uri
 import android.util.Log
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -19,6 +22,15 @@ class LocationViewModel(private val locationManager: LocationManager) : ViewMode
 
     private val _locationData = MutableStateFlow<LocationData?>(null)
     val locationData: StateFlow<LocationData?> = _locationData.asStateFlow()
+
+    var checkLocationSettingsLauncher: ActivityResultLauncher<IntentSenderRequest>? = null
+
+    private val _showDialog = MutableStateFlow<Boolean>(false)
+    val showDialog: StateFlow<Boolean> = _showDialog.asStateFlow()
+//    var showDialog = mutableStateOf(false)
+//    var dialogMessage = mutableStateOf("")
+    private val _dialogMessage = MutableStateFlow<String>("")
+    val dialogMessage: StateFlow<String> = _dialogMessage.asStateFlow()
 
     fun getLocationData() {
         // Emit the LocationData object to the StateFlow
@@ -43,6 +55,45 @@ class LocationViewModel(private val locationManager: LocationManager) : ViewMode
                 // Handle error
             }
         }
+    }
+
+    fun checkLocationSettings() {
+        locationManager.checkLocationSettings(
+            builder = locationManager.getCurrentLocationSettingsBuilder(),
+            onSuccess = {
+                // Handle success
+                Log.d("LocationViewModel", "Check Location Settings accepted")
+                _dialogMessage.value = "Location settings are satisfied."
+                _showDialog.value = true
+            },
+            onFailure = { pendingIntent ->
+                pendingIntent?.let {
+                    Log.d("LocationViewModel", "Check Location Settings denied")
+                    val intentSenderRequest = IntentSenderRequest.Builder(it).build()
+                    checkLocationSettingsLauncher?.launch(intentSenderRequest)
+                } ?: run {
+                    _dialogMessage.value = "Location settings are not satisfied and cannot be resolved."
+                    _showDialog.value = true
+                }
+            }
+        )
+    }
+    fun onLocationSettingsChangeAccepted() {
+        // Handle location settings accepted
+        _dialogMessage.value = "Location settings change accepted."
+        _showDialog.value = true
+
+    }
+
+    fun onLocationSettingsChangeDenied() {
+        // Handle location settings denied
+        _dialogMessage.value = "Location settings change denied."
+        _showDialog.value = true
+
+    }
+
+    fun dismissDialog() {
+        _showDialog.value = false
     }
 }
 

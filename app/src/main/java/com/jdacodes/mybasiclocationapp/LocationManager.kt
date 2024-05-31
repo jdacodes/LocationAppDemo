@@ -2,6 +2,7 @@ package com.jdacodes.mybasiclocationapp
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.PendingIntent
 import android.content.Context
 import android.content.IntentSender
 import android.content.pm.PackageManager
@@ -41,7 +42,7 @@ class LocationManager(private val context: Context) : ViewModelProvider.Factory 
         .setPriority(Priority.PRIORITY_HIGH_ACCURACY) // Set the priority of the location request to high accuracy.
         .build() // Build the LocationRequest object.
 
-    var builder = getCurrentLocationSettingsBuilder()
+//    var builder = getCurrentLocationSettingsBuilder()
 //    val locationSettings = checkLocationSettings(builder)
 
     fun getCurrentLocationSettingsBuilder(): LocationSettingsRequest.Builder {
@@ -50,7 +51,11 @@ class LocationManager(private val context: Context) : ViewModelProvider.Factory 
         return builder
     }
 
-    fun checkLocationSettings(builder: LocationSettingsRequest.Builder) {
+    fun checkLocationSettings(
+        builder: LocationSettingsRequest.Builder,
+        onSuccess: () -> Unit,
+        onFailure: (PendingIntent?) -> Unit
+    ) {
         //Check whether the current location settings are satisfied or not.
         val client: SettingsClient = LocationServices.getSettingsClient(context)
         val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
@@ -60,11 +65,11 @@ class LocationManager(private val context: Context) : ViewModelProvider.Factory 
 
                 //Verify the location settings states.
                 val state =
-                    locationSettingsResponse.locationSettingsStates?.isGpsUsable //true or false
                 locationSettingsResponse.locationSettingsStates?.isLocationUsable //true or false
-                locationSettingsResponse.locationSettingsStates?.isNetworkLocationUsable
+
                 if (state == true) {
                     //update the ui here
+                    onSuccess()
                 }
 
             }
@@ -80,8 +85,11 @@ class LocationManager(private val context: Context) : ViewModelProvider.Factory 
                             context as MainActivity,
                             REQUEST_CHECK_SETTINGS
                         )
+                        onFailure(exception.resolution)
+
                     } catch (sendEx: IntentSender.SendIntentException) {
                         // Ignore the error.
+                        onFailure(null)
                     }
 
                 }
@@ -89,35 +97,36 @@ class LocationManager(private val context: Context) : ViewModelProvider.Factory 
     }
 
     //Check whether the current location settings are satisfied or not.
-    val client: SettingsClient = LocationServices.getSettingsClient(context)
-    val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
-        .addOnSuccessListener { locationSettingsResponse ->
-            // All location settings are satisfied. The client can initialize location requests here.
-            //location requests here.
-
-            //Verify the location settings states.
-            locationSettingsResponse.locationSettingsStates?.isGpsUsable //true or false
-            locationSettingsResponse.locationSettingsStates?.isLocationUsable //true or false
-
-        }
-        .addOnFailureListener { exception ->
-            if (exception is ResolvableApiException) {
-                // Location settings are not satisfied, but this can be fixed
-                // by showing the user a dialog.
-                try {
-                    // Show the dialog by calling startResolutionForResult(),
-                    // and check the result in onActivityResult().
-                    val REQUEST_CHECK_SETTINGS = 101
-                    exception.startResolutionForResult(
-                        context as MainActivity,
-                        REQUEST_CHECK_SETTINGS
-                    )
-                } catch (sendEx: IntentSender.SendIntentException) {
-                    // Ignore the error.
-                }
-
-            }
-        }
+//    val client: SettingsClient = LocationServices.getSettingsClient(context)
+//    val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
+//        .addOnSuccessListener { locationSettingsResponse ->
+//            // All location settings are satisfied. The client can initialize location requests here.
+//            //location requests here.
+//
+//            //Verify the location settings states.
+//            locationSettingsResponse.locationSettingsStates?.isGpsUsable //true or false
+//            locationSettingsResponse.locationSettingsStates?.isLocationUsable //true or false
+//
+//        }
+//        .addOnFailureListener { exception ->
+//            if (exception is ResolvableApiException) {
+//                // Location settings are not satisfied, but this can be fixed
+//                // by showing the user a dialog.
+//                try {
+//                    // Show the dialog by calling startResolutionForResult(),
+//                    // and check the result in onActivityResult().
+//                    val REQUEST_CHECK_SETTINGS = 101
+//                    exception.startResolutionForResult(
+//                        context as MainActivity,
+//                        REQUEST_CHECK_SETTINGS
+//                    )
+//
+//                } catch (sendEx: IntentSender.SendIntentException) {
+//                    // Ignore the error.
+//                }
+//
+//            }
+//        }
 
     lateinit var locationData: LocationData
     private val locationCallback = object : LocationCallback() {
@@ -175,6 +184,5 @@ class LocationManager(private val context: Context) : ViewModelProvider.Factory 
             null
         }
     }
-
 
 }

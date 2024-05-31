@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.jetbrains.kotlinx.coroutines.playservices)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.runtime.livedata)
+    implementation(libs.androidx.appcompat)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -11,10 +11,13 @@ import androidx.annotation.RequiresPermission
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -31,10 +34,15 @@ import com.google.android.gms.tasks.CancellationTokenSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import androidx.compose.runtime.getValue
+
 
 @SuppressLint("MissingPermission")
 @Composable
-fun CurrentLocationScreen(viewModel: LocationViewModel) {
+fun CurrentLocationScreen(
+    viewModel: LocationViewModel,
+    paddingValues: PaddingValues
+) {
     val permissions = listOf(
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.ACCESS_FINE_LOCATION,
@@ -45,7 +53,8 @@ fun CurrentLocationScreen(viewModel: LocationViewModel) {
         onGranted = {
             CurrentLocationContent(
                 usePreciseLocation = it.contains(Manifest.permission.ACCESS_FINE_LOCATION),
-                viewModel
+                viewModel,
+                paddingValues
             )
         },
     )
@@ -55,7 +64,11 @@ fun CurrentLocationScreen(viewModel: LocationViewModel) {
     anyOf = [Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION],
 )
 @Composable
-fun CurrentLocationContent(usePreciseLocation: Boolean, viewModel: LocationViewModel) {
+fun CurrentLocationContent(
+    usePreciseLocation: Boolean,
+    viewModel: LocationViewModel,
+    paddingValues: PaddingValues
+) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val locationClient = remember {
@@ -71,80 +84,100 @@ fun CurrentLocationContent(usePreciseLocation: Boolean, viewModel: LocationViewM
         mutableDoubleStateOf(0.0)
     }
 
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .animateContentSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Button(
-            onClick = {
-                // getting last known location is faster and minimizes battery usage
-                // This information may be out of date.
-                // Location may be null as previously no client has access location
-                // or location turned of in device setting.
-                // Please handle for null case as well as additional check can be added before using the method
-                scope.launch(Dispatchers.IO) {
-                    val result = locationClient.lastLocation.await()
-                    locationInfo = if (result == null) {
-                        "No last known location. Try fetching the current location first"
-                    } else {
-                        "Current location is \n" + "lat : ${result.latitude}\n" +
-                                "long : ${result.longitude}\n" + "fetched at ${System.currentTimeMillis()}"
-                    }
+    val showDialog by
+    viewModel.showDialog.collectAsState()
 
-                    result?.let { fetchedLocation ->
-                        latitude = fetchedLocation.latitude
-                        longitude = fetchedLocation.longitude
+    val dialogMessage by viewModel.dialogMessage.collectAsState()
 
-
-                    }
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissDialog() },
+            confirmButton = {
+                Button(onClick = { viewModel.dismissDialog() }) {
+                    Text("OK")
                 }
             },
-        ) {
-            Text("Get last known location")
-        }
-
-        Button(
-            onClick = {
-                //To get more accurate or fresher device location use this method
-                scope.launch(Dispatchers.IO) {
-                    val priority = if (usePreciseLocation) {
-                        Priority.PRIORITY_HIGH_ACCURACY
-                    } else {
-                        Priority.PRIORITY_BALANCED_POWER_ACCURACY
-                    }
-                    val result = locationClient.getCurrentLocation(
-                        priority,
-                        CancellationTokenSource().token,
-                    ).await()
-                    result?.let { fetchedLocation ->
-                        locationInfo =
-                            "Current location is \n" + "lat : ${fetchedLocation.latitude}\n" +
-                                    "long : ${fetchedLocation.longitude}\n" + "fetched at ${System.currentTimeMillis()}"
-                        latitude = fetchedLocation.latitude
-                        longitude = fetchedLocation.longitude
-                    }
-                }
-            },
-        ) {
-            Text(text = "Get current location")
-        }
-        Text(
-            text = locationInfo,
+            text = { Text(dialogMessage) }
         )
-        Button(
-            onClick = {
-                val (uri, packageName) = viewModel.getGoogleMapsIntentData(latitude, longitude)
-                launchGoogleMaps(context, uri, packageName)
-            },
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(text = "Open Google Maps")
-        }
     }
+
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .animateContentSize()
+                .padding(paddingValues),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Button(
+                onClick = {
+                    // getting last known location is faster and minimizes battery usage
+                    // This information may be out of date.
+                    // Location may be null as previously no client has access location
+                    // or location turned of in device setting.
+                    // Please handle for null case as well as additional check can be added before using the method
+                    scope.launch(Dispatchers.IO) {
+                        val result = locationClient.lastLocation.await()
+                        locationInfo = if (result == null) {
+                            "No last known location. Try fetching the current location first"
+                        } else {
+                            "Current location is \n" + "lat : ${result.latitude}\n" +
+                                    "long : ${result.longitude}\n" + "fetched at ${System.currentTimeMillis()}"
+                        }
+
+                        result?.let { fetchedLocation ->
+                            latitude = fetchedLocation.latitude
+                            longitude = fetchedLocation.longitude
+
+
+                        }
+                    }
+                },
+            ) {
+                Text("Get last known location")
+            }
+
+            Button(
+                onClick = {
+                    //To get more accurate or fresher device location use this method
+                    scope.launch(Dispatchers.IO) {
+                        val priority = if (usePreciseLocation) {
+                            Priority.PRIORITY_HIGH_ACCURACY
+                        } else {
+                            Priority.PRIORITY_BALANCED_POWER_ACCURACY
+                        }
+                        val result = locationClient.getCurrentLocation(
+                            priority,
+                            CancellationTokenSource().token,
+                        ).await()
+                        result?.let { fetchedLocation ->
+                            locationInfo =
+                                "Current location is \n" + "lat : ${fetchedLocation.latitude}\n" +
+                                        "long : ${fetchedLocation.longitude}\n" + "fetched at ${System.currentTimeMillis()}"
+                            latitude = fetchedLocation.latitude
+                            longitude = fetchedLocation.longitude
+                        }
+                    }
+                },
+            ) {
+                Text(text = "Get current location")
+            }
+            Text(
+                text = locationInfo,
+            )
+            Button(
+                onClick = {
+                    val (uri, packageName) = viewModel.getGoogleMapsIntentData(latitude, longitude)
+                    launchGoogleMaps(context, uri, packageName)
+                },
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(text = "Open Google Maps")
+            }
+            Button(onClick = { viewModel.checkLocationSettings() }) {
+                Text("Check Location Settings")
+            }
+        }
 }
 
 fun launchGoogleMaps(context: Context, uri: Uri, packageName: String?) {

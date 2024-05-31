@@ -12,6 +12,7 @@ playServicesLocation = "21.2.0"
 googleAccompanist = "0.34.0"
 kotlinx = "1.8.1"
 workRuntimeKtx = "2.9.0"
+appcompat = "1.7.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -33,6 +34,7 @@ google-accompanist-permissions = { group = "com.google.accompanist", name = "acc
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 jetbrains-kotlinx-coroutines-playservices = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "kotlinx" }
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workRuntimeKtx" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

@@ -15,10 +15,14 @@ import com.jdacodes.mybasiclocationapp.ui.theme.MyBasicLocationAppTheme
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.core.app.ActivityCompat
@@ -92,16 +96,36 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        else ->
+                        else -> null
                             // You can directly ask for the permission.
                             // The registered ActivityResultCallback gets the result of this request.
 
-                            locationPermissionRequest.launch(
-                                arrayOf(
-                                    Manifest.permission.ACCESS_FINE_LOCATION,
-                                    Manifest.permission.ACCESS_COARSE_LOCATION
-                                )
-                            )
+//                            locationPermissionRequest.launch(
+//                                arrayOf(
+//                                    Manifest.permission.ACCESS_FINE_LOCATION,
+//                                    Manifest.permission.ACCESS_COARSE_LOCATION
+//                                )
+//                            )
+                    }
+                    val locationSettingsLauncher = rememberLauncherForActivityResult(
+                        contract = ActivityResultContracts.StartIntentSenderForResult()
+                    ) { result ->
+                        if (result.resultCode == AppCompatActivity.RESULT_OK) {
+                            viewModel.onLocationSettingsChangeAccepted()
+                        } else {
+                            viewModel.onLocationSettingsChangeDenied()
+                        }
+                    }
+                    LaunchedEffect(Unit) {
+                        viewModel.checkLocationSettingsLauncher = locationSettingsLauncher
+                    }
+
+                    Scaffold(
+                        topBar = {},
+
+                    ) { paddingValues ->
+                        CurrentLocationScreen(viewModel,paddingValues)
+
                     }
 //                    Greeting("Android")
                     val currentLocation = viewModel.lastKnownLocation
@@ -112,7 +136,7 @@ class MainActivity : ComponentActivity() {
 //                        currentLocation = currentLocation,
 //                        locationData = locationData)
 
-                    CurrentLocationScreen(viewModel)
+
 
 //                    LocationUpdatesScreen()
 
