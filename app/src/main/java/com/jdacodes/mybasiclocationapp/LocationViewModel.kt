@@ -41,7 +41,7 @@ class LocationViewModel(private val locationManager: LocationManager) : ViewMode
     }
 
     fun getGoogleMapsIntentData(latitude: Double, longitude: Double): Pair<Uri, String?> {
-        val uri = Uri.parse("geo:$latitude,$longitude")
+        val uri = Uri.parse("geo:$latitude,$longitude?z=18")
         val packageName = "com.google.android.apps.maps"
         return Pair(uri, packageName)
     }

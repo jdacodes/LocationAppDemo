@@ -188,7 +188,9 @@ fun launchGoogleMaps(context: Context, uri: Uri, packageName: String?) {
     if (intent.resolveActivity(context.packageManager) != null) {
         context.startActivity(intent)
     } else {
-        Log.d("launchGoogleMaps", "No available app to handle the intent")
+        Log.d("launchGoogleMaps", "Package manager is null, launching maps")
+        context.startActivity(intent)
     }
+
 
 }
