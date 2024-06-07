@@ -17,8 +17,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -42,6 +44,7 @@ import kotlinx.coroutines.flow.StateFlow
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun LocationPermissionScreen(
+    drawerState: DrawerState,
     onShareLocation: () -> Unit,
     onLocationUpdate:() -> Unit,
     currentLocation: StateFlow<Location?>,
@@ -72,10 +75,20 @@ fun LocationPermissionScreen(
         mutableStateOf<RationaleState?>(null)
     }
 
+    Scaffold(
+        topBar = {
+            CustomAppBar(
+                drawerState = drawerState,
+                title = "Location Permissions"
+            )
+        }
+    ) { paddingValues ->
     Box(
         Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(paddingValues)
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 16.dp),
     ) {
         Column(
             modifier = Modifier
@@ -180,4 +193,5 @@ fun LocationPermissionScreen(
             Icon(Icons.Outlined.Settings, "Location Settings")
         }
     }
+}
 }

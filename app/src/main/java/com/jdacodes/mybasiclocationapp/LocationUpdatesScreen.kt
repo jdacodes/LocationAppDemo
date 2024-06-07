@@ -1,19 +1,22 @@
 package com.jdacodes.mybasiclocationapp
 
-import android.annotation.SuppressLint
-import androidx.compose.runtime.Composable
 import android.Manifest
+import android.annotation.SuppressLint
 import android.os.Looper
 import androidx.annotation.RequiresPermission
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,19 +40,29 @@ import java.util.concurrent.TimeUnit
 
 @SuppressLint("MissingPermission")
 @Composable
-fun LocationUpdatesScreen() {
+fun LocationUpdatesScreen(drawerState: DrawerState) {
     val permissions = listOf(
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.ACCESS_FINE_LOCATION,
     )
-    // Requires at least coarse permission
-    PermissionBox(
-        permissions = permissions,
-        requiredPermissions = listOf(permissions.first()),
-    ) {
-        LocationUpdatesContent(
-            usePreciseLocation = it.contains(Manifest.permission.ACCESS_FINE_LOCATION),
-        )
+    Scaffold(
+        topBar = {
+            CustomAppBar(
+                drawerState = drawerState,
+                title = "Location Updates"
+            )
+        }
+    ) { paddingValues ->
+        // Requires at least coarse permission
+        PermissionBox(
+            permissions = permissions,
+            requiredPermissions = listOf(permissions.first()),
+        ) {
+            LocationUpdatesContent(
+                usePreciseLocation = it.contains(Manifest.permission.ACCESS_FINE_LOCATION),
+                paddingValues
+            )
+        }
     }
 }
 
@@ -57,7 +70,10 @@ fun LocationUpdatesScreen() {
     anyOf = [Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION],
 )
 @Composable
-fun LocationUpdatesContent(usePreciseLocation: Boolean) {
+fun LocationUpdatesContent(
+    usePreciseLocation: Boolean,
+    paddingValues: PaddingValues
+) {
     // The location request that defines the location updates
     var locationRequest by remember {
         mutableStateOf<LocationRequest?>(null)
@@ -85,7 +101,8 @@ fun LocationUpdatesContent(usePreciseLocation: Boolean) {
         modifier = Modifier
             .fillMaxWidth()
             .animateContentSize()
-            .padding(16.dp),
+            .padding(paddingValues)
+            .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item {

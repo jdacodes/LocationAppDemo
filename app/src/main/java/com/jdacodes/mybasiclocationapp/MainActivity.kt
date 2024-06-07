@@ -1,33 +1,32 @@
 package com.jdacodes.mybasiclocationapp
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.jdacodes.mybasiclocationapp.ui.theme.MyBasicLocationAppTheme
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.compose.rememberNavController
+import com.jdacodes.mybasiclocationapp.ui.theme.MyBasicLocationAppTheme
 
 class MainActivity : ComponentActivity() {
     private lateinit var locationManager: LocationManager
@@ -35,7 +34,6 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        val viewModel by viewModels<LocationViewModel> { LocationManager(this) }
         locationManager = LocationManager(this)
         val viewModelFactory = LocationViewModelFactory(locationManager)
         val viewModel = ViewModelProvider(this, viewModelFactory).get(LocationViewModel::class.java)
@@ -62,6 +60,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MyBasicLocationAppTheme {
+                val navController = rememberNavController()
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
@@ -97,8 +96,8 @@ class MainActivity : ComponentActivity() {
                         }
 
                         else -> null
-                            // You can directly ask for the permission.
-                            // The registered ActivityResultCallback gets the result of this request.
+                        // You can directly ask for the permission.
+                        // The registered ActivityResultCallback gets the result of this request.
 
 //                            locationPermissionRequest.launch(
 //                                arrayOf(
@@ -120,27 +119,8 @@ class MainActivity : ComponentActivity() {
                         viewModel.checkLocationSettingsLauncher = locationSettingsLauncher
                     }
 
-                    Scaffold(
-                        topBar = {},
+                    MainNavigation(viewModel = viewModel)
 
-                    ) { paddingValues ->
-                        CurrentLocationScreen(viewModel,paddingValues)
-
-                    }
-//                    Greeting("Android")
-                    val currentLocation = viewModel.lastKnownLocation
-                    val locationData = viewModel.locationData
-//                    LocationPermissionScreen(
-//                        onShareLocation = viewModel::shareLastKnownLocation,
-//                        onLocationUpdate = viewModel::getLocationData,
-//                        currentLocation = currentLocation,
-//                        locationData = locationData)
-
-
-
-//                    LocationUpdatesScreen()
-
-//                    BgLocationAccessScreen()
                 }
             }
         }
@@ -220,22 +200,5 @@ class MainActivity : ComponentActivity() {
     override fun onPause() {
         super.onPause()
         locationManager.stopLocationUpdates()
-    }
-}
-
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MyBasicLocationAppTheme {
-        Greeting("Android")
     }
 }

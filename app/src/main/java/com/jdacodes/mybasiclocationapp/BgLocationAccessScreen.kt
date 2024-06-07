@@ -1,14 +1,17 @@
 package com.jdacodes.mybasiclocationapp
 
-import androidx.compose.runtime.Composable
 import android.Manifest
 import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
@@ -16,37 +19,44 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
 
 @Composable
-fun BgLocationAccessScreen() {
-    // Request for foreground permissions first
-    PermissionBox(
-        permissions = listOf(
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION,
-        ),
-        requiredPermissions = listOf(Manifest.permission.ACCESS_COARSE_LOCATION),
-        onGranted = {
-            // From Android 10 onwards request for background permission only after fine or coarse is granted
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                PermissionBox(permissions = listOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
-                    BackgroundLocationControls()
+fun BgLocationAccessScreen(drawerState: DrawerState) {
+    Scaffold(
+        topBar = {
+            CustomAppBar(
+                drawerState = drawerState,
+                title = "Background Location"
+            )
+        }
+    ) { paddingValues ->
+        // Request for foreground permissions first
+        PermissionBox(
+            permissions = listOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+            ),
+            requiredPermissions = listOf(Manifest.permission.ACCESS_COARSE_LOCATION),
+            onGranted = {
+                // From Android 10 onwards request for background permission only after fine or coarse is granted
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    PermissionBox(permissions = listOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION)) {
+                        BackgroundLocationControls(paddingValues)
+                    }
+                } else {
+                    BackgroundLocationControls(paddingValues)
                 }
-            } else {
-                BackgroundLocationControls()
-            }
-        },
-    )
+            },
+        )
+    }
 }
 
 @Composable
-private fun BackgroundLocationControls() {
+private fun BackgroundLocationControls(paddingValues: PaddingValues) {
     val context = LocalContext.current
     val workManager = WorkManager.getInstance(context)
 
@@ -97,7 +107,8 @@ private fun BackgroundLocationControls() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(paddingValues)
+            .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {

@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -40,24 +42,31 @@ import androidx.compose.runtime.getValue
 @SuppressLint("MissingPermission")
 @Composable
 fun CurrentLocationScreen(
+    drawerState: DrawerState,
     viewModel: LocationViewModel,
-    paddingValues: PaddingValues
 ) {
     val permissions = listOf(
         Manifest.permission.ACCESS_COARSE_LOCATION,
         Manifest.permission.ACCESS_FINE_LOCATION,
     )
-    PermissionBox(
-        permissions = permissions,
-        requiredPermissions = listOf(permissions.first()),
-        onGranted = {
-            CurrentLocationContent(
-                usePreciseLocation = it.contains(Manifest.permission.ACCESS_FINE_LOCATION),
-                viewModel,
-                paddingValues
-            )
-        },
-    )
+    Scaffold(
+        topBar = { CustomAppBar(
+            drawerState = drawerState,
+            title = "Current Location"
+        ) }
+    ) { paddingValues ->
+        PermissionBox(
+            permissions = permissions,
+            requiredPermissions = listOf(permissions.first()),
+            onGranted = {
+                CurrentLocationContent(
+                    usePreciseLocation = it.contains(Manifest.permission.ACCESS_FINE_LOCATION),
+                    viewModel,
+                    paddingValues
+                )
+            },
+        )
+    }
 }
 
 @RequiresPermission(
@@ -105,7 +114,8 @@ fun CurrentLocationContent(
             Modifier
                 .fillMaxWidth()
                 .animateContentSize()
-                .padding(paddingValues),
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
